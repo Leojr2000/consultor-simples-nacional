@@ -568,29 +568,32 @@
         }
 
         function parseReceitaWS(data) {
+            // ReceitaWS retorna em maiúsculas
             if (data.status === 'ERROR') {
                 return null;
             }
             return {
-                razao_social: data.nome || 'N/A',
+                razao_social: data.nome ? data.nome.trim() : 'N/A',
                 simples_nacional: data.simples ? 'SIM' : 'NÃO',
-                situacao: data.status || 'N/A'
+                situacao: data.status ? data.status.trim() : 'N/A'
             };
         }
 
         function parseBrasilAPI(data) {
+            // BrasilAPI retorna estrutura diferente
             return {
-                razao_social: data.nome || 'N/A',
+                razao_social: data.nome ? data.nome.trim() : 'N/A',
                 simples_nacional: data.simples_nacional ? 'SIM' : 'NÃO',
-                situacao: data.situacao || 'ATIVO'
+                situacao: data.situacao ? data.situacao.trim() : 'ATIVO'
             };
         }
 
         function parseOpenCNPJ(data) {
+            // OpenCNPJ retorna dados da Receita Federal
             return {
-                razao_social: data.nome || 'N/A',
+                razao_social: data.nome ? data.nome.trim() : 'N/A',
                 simples_nacional: data.simples ? 'SIM' : 'NÃO',
-                situacao: data.situacao || 'N/A'
+                situacao: data.situacao ? data.situacao.trim() : 'N/A'
             };
         }
 
@@ -604,6 +607,8 @@
 
             try {
                 const url = api.url + cnpjLimpo;
+                console.log(`Tentando ${api.name}: ${url}`);
+                
                 const response = await fetch(url, {
                     method: 'GET',
                     headers: {
@@ -613,8 +618,10 @@
 
                 if (response.ok) {
                     const data = await response.json();
+                    console.log(`${api.name} resposta:`, data);
+                    
                     const parsed = api.parser(data);
-                    if (parsed) {
+                    if (parsed && parsed.razao_social && parsed.razao_social !== 'N/A') {
                         return {
                             ...parsed,
                             api: api.name
@@ -672,7 +679,7 @@
                 cnpjFormatado: cnpjFormatado,
                 simples_nacional: 'ERRO',
                 razao_social: 'Não encontrado',
-                situacao: 'CNPJ não localizado em nenhuma base de dados',
+                situacao: 'CNPJ não localizado',
                 status: 'NAO_ENCONTRADO',
                 api: 'Nenhuma'
             };
@@ -742,6 +749,7 @@
                 // Razão Social
                 const cellRazao = row.insertCell(1);
                 cellRazao.textContent = resultado.razao_social || 'N/A';
+                cellRazao.title = resultado.razao_social || 'Não disponível';
 
                 // Simples Nacional
                 const cellSimples = row.insertCell(2);
