@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consultor Simples Nacional - Gerador de Excel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1F4E78 0%, #2E5C8A 100%);
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .section h2 {
+            color: #1F4E78;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 150px;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 12px 25px;
+            font-size: 1em;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+            min-width: 150px;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .instructions {
+            background: #f5f5f5;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .instructions h3 {
+            color: #1F4E78;
+            margin-bottom: 15px;
+        }
+
+        .instructions ol {
+            margin-left: 20px;
+            line-height: 1.8;
+        }
+
+        .instructions li {
+            margin-bottom: 10px;
+        }
+
+        .example {
+            background: #fffbea;
+            border: 1px solid #ffed4e;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .alert.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            display: block;
+        }
+
+        .alert.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            display: block;
+        }
+
+        .alert.info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+            display: block;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .feature-box {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+            text-align: center;
+        }
+
+        .feature-box h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .feature-box p {
+            color: #666;
+            font-size: 0.95em;
+        }
+
+        .progress {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .footer {
+            background: #f5f5f5;
+            padding: 20px;
+            text-align: center;
+            color: #666;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .color-legend {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .color-item {
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .color-sim {
+            background: #C6EFCE;
+            color: #006100;
+        }
+
+        .color-nao {
+            background: #FFC7CE;
+            color: #9C0006;
+        }
+
+        .color-erro {
+            background: #FFEB9C;
+            color: #9C6500;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .btn-primary, .btn-secondary {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏢 Consultor Simples Nacional</h1>
+            <p>Gere Excel automatizado para consultar status de CNPJs</p>
+        </div>
+
+        <div class="content">
+            <!-- SEÇÃO 1: COMO FUNCIONA -->
+            <div class="section">
+                <h2>📖 Como Funciona</h2>
+                <div class="features">
+                    <div class="feature-box">
+                        <h3>1️⃣ Digite</h3>
+                        <p>Cole seus CNPJs aqui</p>
+                    </div>
+                    <div class="feature-box">
+                        <h3>2️⃣ Gere</h3>
+                        <p>Clique no botão abaixo</p>
+                    </div>
+                    <div class="feature-box">
+                        <h3>3️⃣ Download</h3>
+                        <p>Excel pronto para usar</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SEÇÃO 2: INPUT -->
+            <div class="section">
+                <h2>📝 Cole seus CNPJs</h2>
+                <div class="input-group">
+                    <label for="cnpjInput">Coloque um CNPJ por linha:</label>
+                    <textarea id="cnpjInput" placeholder="11.222.333/0001-81&#10;11222333000181&#10;34.028.316/0001-86&#10;..."></textarea>
+                    <div class="example">
+                        <strong>Exemplos:</strong><br>
+                        ✅ 11.222.333/0001-81 (com formatação)<br>
+                        ✅ 11222333000181 (sem formatação)<br>
+                        ✅ Ambos os formatos funcionam!
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn-primary" onclick="gerarExcel()">
+                        📥 Gerar Excel Agora
+                    </button>
+                    <button class="btn-secondary" onclick="preencherExemplo()">
+                        📋 Carregar Exemplo
+                    </button>
+                    <button class="btn-secondary" onclick="limpar()">
+                        🗑️ Limpar
+                    </button>
+                </div>
+
+                <div id="alert" class="alert"></div>
+                <div id="progress" class="progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill">0%</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SEÇÃO 3: PRÓXIMOS PASSOS -->
+            <div class="section">
+                <h2>🚀 Próximos Passos</h2>
+                <div class="instructions">
+                    <h3>Depois de baixar o Excel:</h3>
+                    <ol>
+                        <li><strong>Abra o arquivo</strong> "dados_cnpj.xlsx" no seu computador</li>
+                        <li><strong>Vá para a aba "📊 DADOS"</strong></li>
+                        <li><strong>Verifique se os CNPJs estão</strong> na coluna A</li>
+                        <li><strong>Salve o arquivo</strong> (Ctrl+S)</li>
+                        <li><strong>Abra o terminal/CMD</strong> na pasta onde salvou</li>
+                        <li><strong>Execute:</strong> <code>python consultor_cnpj.py</code></li>
+                        <li><strong>Aguarde</strong> o processamento</li>
+                        <li><strong>Abra</strong> "relatorio_simples_nacional.xlsx" para ver os resultados!</li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- SEÇÃO 4: LEGENDA DE CORES -->
+            <div class="section">
+                <h2>🎨 Legenda de Cores (no Resultado)</h2>
+                <div class="color-legend">
+                    <div class="color-item color-sim">
+                        🟢 VERDE<br>
+                        <small>Optante Simples Nacional</small>
+                    </div>
+                    <div class="color-item color-nao">
+                        🔴 VERMELHO<br>
+                        <small>NÃO Optante</small>
+                    </div>
+                    <div class="color-item color-erro">
+                        🟡 AMARELO<br>
+                        <small>Erro/Não Encontrado</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SEÇÃO 5: FAQ -->
+            <div class="section">
+                <h2>❓ Dúvidas Frequentes</h2>
+                <div class="instructions">
+                    <h3>Qual o limite de CNPJs?</h3>
+                    <p>Nenhum! Você pode colocar 10, 100, 1000 CNPJs que todos serão consultados.</p>
+
+                    <h3 style="margin-top: 20px;">Quanto custa?</h3>
+                    <p>100% GRATUITO! Não há cobrança nenhuma.</p>
+
+                    <h3 style="margin-top: 20px;">Quanto tempo leva?</h3>
+                    <p>Depende da quantidade: aproximadamente 5-10 segundos por CNPJ.</p>
+
+                    <h3 style="margin-top: 20px;">Preciso de Python instalado?</h3>
+                    <p>Sim, Python 3.6+ e as dependências (pip install -r requirements.txt).</p>
+
+                    <h3 style="margin-top: 20px;">Como instalar Python?</h3>
+                    <p>Acesse: <strong>https://www.python.org/downloads/</strong> e siga as instruções.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>🏢 Consultor Simples Nacional © 2024 | Desenvolvido com ❤️</p>
+            <p style="font-size: 0.9em; margin-top: 10px;">
+                📊 <a href="https://github.com/Leojr2000/consultor-simples-nacional" style="color: #667eea; text-decoration: none;">
+                    Ver no GitHub
+                </a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        function preencherExemplo() {
+            const exemplos = `11.222.333/0001-81
+11222333000181
+34.028.316/0001-86
+34028316000186`;
+            document.getElementById('cnpjInput').value = exemplos;
+            showAlert('✅ Exemplos carregados! Agora clique em "Gerar Excel Agora"', 'info');
+        }
+
+        function limpar() {
+            document.getElementById('cnpjInput').value = '';
+            hideAlert();
+            showAlert('🗑️ Texto limpo!', 'info');
+        }
+
+        function showAlert(message, type) {
+            const alert = document.getElementById('alert');
+            alert.textContent = message;
+            alert.className = 'alert ' + type;
+            setTimeout(() => {
+                if (type === 'info') hideAlert();
+            }, 3000);
+        }
+
+        function hideAlert() {
+            document.getElementById('alert').className = 'alert';
+        }
+
+        function gerarExcel() {
+            const cnpjText = document.getElementById('cnpjInput').value.trim();
+            
+            if (!cnpjText) {
+                showAlert('❌ Por favor, coloque alguns CNPJs!', 'error');
+                return;
+            }
+
+            const cnpjs = cnpjText.split('\n')
+                .map(c => c.trim())
+                .filter(c => c.length > 0);
+
+            if (cnpjs.length === 0) {
+                showAlert('❌ Nenhum CNPJ válido encontrado!', 'error');
+                return;
+            }
+
+            try {
+                // Mostrar progresso
+                document.getElementById('progress').style.display = 'block';
+                let progress = 0;
+                const progressInterval = setInterval(() => {
+                    if (progress < 90) {
+                        progress += Math.random() * 30;
+                        updateProgress(Math.min(progress, 90));
+                    }
+                }, 100);
+
+                // Usar XLSX.js para criar o Excel
+                const script = document.createElement('script');
+                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.min.js';
+                script.onload = function() {
+                    // Criar workbook
+                    const wb = XLSX.utils.book_new();
+
+                    // Aba 1: Instruções
+                    const wsInst = XLSX.utils.aoa_to_sheet([
+                        ['🏢 CONSULTOR SIMPLES NACIONAL'],
+                        [''],
+                        ['✅ PASSO 1: Vá para a aba DADOS'],
+                        ['Coloque seus CNPJs na coluna A (um por linha)'],
+                        ['Formatos: 11.222.333/0001-81 ou 11222333000181'],
+                        [''],
+                        ['✅ PASSO 2: Salve este arquivo'],
+                        ['Use Ctrl+S'],
+                        [''],
+                        ['✅ PASSO 3: Execute o script Python'],
+                        ['Abra o terminal e execute: python consultor_cnpj.py'],
+                        [''],
+                        ['✅ PASSO 4: Veja o resultado'],
+                        ['Um novo arquivo será gerado: relatorio_simples_nacional.xlsx'],
+                        [''],
+                        ['🎨 LEGENDA DE CORES'],
+                        ['VERDE = Optante Simples Nacional'],
+                        ['VERMELHO = Não Optante'],
+                        ['AMARELO = Erro/Não Encontrado'],
+                    ]);
+                    XLSX.utils.book_append_sheet(wb, wsInst, '📖 INSTRUÇÕES');
+
+                    // Aba 2: Dados
+                    const wsDados = XLSX.utils.aoa_to_sheet([['CNPJ', 'Observações (opcional)']]);
+                    
+                    // Adicionar CNPJs
+                    cnpjs.forEach((cnpj, idx) => {
+                        wsDados['A' + (idx + 2)] = { v: cnpj, t: 's' };
+                        wsDados['B' + (idx + 2)] = { v: '', t: 's' };
+                    });
+
+                    // Adicionar linhas vazias (até 100 linhas no total)
+                    for (let i = cnpjs.length + 2; i <= 102; i++) {
+                        wsDados['A' + i] = { v: '', t: 's' };
+                        wsDados['B' + i] = { v: '', t: 's' };
+                    }
+
+                    // Definir largura das colunas
+                    wsDados['!cols'] = [{ wch: 25 }, { wch: 50 }];
+
+                    XLSX.utils.book_append_sheet(wb, wsDados, '📊 DADOS');
+
+                    // Salvar arquivo
+                    clearInterval(progressInterval);
+                    updateProgress(100);
+                    
+                    XLSX.writeFile(wb, 'dados_cnpj.xlsx');
+
+                    setTimeout(() => {
+                        showAlert(`✅ Excel gerado com sucesso! ${cnpjs.length} CNPJ(s) adicionado(s)`, 'success');
+                        document.getElementById('progress').style.display = 'none';
+                    }, 500);
+                };
+                document.head.appendChild(script);
+
+            } catch (error) {
+                showAlert('❌ Erro ao gerar Excel: ' + error.message, 'error');
+                console.error(error);
+            }
+        }
+
+        function updateProgress(value) {
+            const progressFill = document.getElementById('progressFill');
+            progressFill.style.width = value + '%';
+            progressFill.textContent = Math.round(value) + '%';
+        }
+
+        // Carregar exemplo ao iniciar
+        window.addEventListener('load', function() {
+            showAlert('👋 Bem-vindo! Cole seus CNPJs e clique em "Gerar Excel Agora"', 'info');
+        });
+    </script>
+</body>
+</html>
