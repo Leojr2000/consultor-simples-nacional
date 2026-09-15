@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consultor Simples Nacional - Online</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 15px 15px 0 0;
+            padding: 40px 20px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            color: #1F4E78;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            color: #666;
+        }
+
+        .main {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            background: white;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            min-height: 600px;
+        }
+
+        .panel {
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .panel-left {
+            border-right: 2px solid #e0e0e0;
+        }
+
+        .panel-right {
+            background: #f9f9f9;
+        }
+
+        .panel h2 {
+            color: #1F4E78;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 200px;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 12px 20px;
+            font-size: 1em;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+            min-width: 120px;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .alert.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            display: block;
+        }
+
+        .alert.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            display: block;
+        }
+
+        .alert.info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+            display: block;
+        }
+
+        .table-container {
+            max-height: calc(100vh - 300px);
+            overflow-y: auto;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th {
+            background: #1F4E78;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 0.95em;
+        }
+
+        tr:hover {
+            background: #f5f5f5;
+        }
+
+        .status-sim {
+            background: #C6EFCE;
+            color: #006100;
+            font-weight: bold;
+            text-align: center;
+            border-radius: 4px;
+            padding: 6px;
+        }
+
+        .status-nao {
+            background: #FFC7CE;
+            color: #9C0006;
+            font-weight: bold;
+            text-align: center;
+            border-radius: 4px;
+            padding: 6px;
+        }
+
+        .status-erro {
+            background: #FFEB9C;
+            color: #9C6500;
+            font-weight: bold;
+            text-align: center;
+            border-radius: 4px;
+            padding: 6px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 30px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-box {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 2px solid #e0e0e0;
+        }
+
+        .stat-box .number {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-box .label {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+
+        .example-box {
+            background: #fffbea;
+            border: 1px solid #ffed4e;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            color: #333;
+        }
+
+        .footer {
+            background: white;
+            border-radius: 0 0 15px 15px;
+            padding: 20px;
+            text-align: center;
+            color: #666;
+            border-top: 1px solid #e0e0e0;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 4px;
+            background: #e0e0e0;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        @media (max-width: 1024px) {
+            .main {
+                grid-template-columns: 1fr;
+            }
+
+            .panel-left {
+                border-right: none;
+                border-bottom: 2px solid #e0e0e0;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+            }
+        }
+
+        .cnpj-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .copy-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #667eea;
+            padding: 0;
+            font-size: 0.9em;
+            text-decoration: underline;
+        }
+
+        .copy-btn:hover {
+            color: #764ba2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏢 Consultor Simples Nacional - Online</h1>
+            <p>Consulte o status de CNPJs diretamente no navegador - 100% Gratuito</p>
+        </div>
+
+        <div class="main">
+            <!-- PAINEL ESQUERDO: INPUT -->
+            <div class="panel panel-left">
+                <h2>📝 Seus CNPJs</h2>
+                
+                <div class="input-group">
+                    <label for="cnpjInput">Cole um CNPJ por linha:</label>
+                    <textarea id="cnpjInput" placeholder="11.222.333/0001-81&#10;11222333000181&#10;34.028.316/0001-86&#10;..."></textarea>
+                    
+                    <div class="example-box">
+                        <strong>✅ Formatos aceitos:</strong><br>
+                        • Com formatação: 11.222.333/0001-81<br>
+                        • Sem formatação: 11222333000181<br>
+                        • Ambos funcionam!
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn-primary" id="consultarBtn" onclick="consultarCNPJs()">
+                        🔍 Consultar Agora
+                    </button>
+                    <button class="btn-secondary" onclick="preencherExemplo()">
+                        📋 Exemplo
+                    </button>
+                    <button class="btn-secondary" onclick="limpar()">
+                        🗑️ Limpar
+                    </button>
+                </div>
+
+                <div id="alert" class="alert"></div>
+                
+                <div class="progress-bar-container" id="progressBar">
+                    <div class="progress-bar-fill" id="progressFill"></div>
+                </div>
+            </div>
+
+            <!-- PAINEL DIREITO: RESULTADO -->
+            <div class="panel panel-right">
+                <h2>📊 Resultados</h2>
+                
+                <div id="emptyState" class="empty-state">
+                    <div class="empty-state-icon">📭</div>
+                    <p>Nenhuma consulta realizada ainda</p>
+                    <p style="font-size: 0.9em; margin-top: 10px;">Cole seus CNPJs no lado esquerdo e clique em "Consultar Agora"</p>
+                </div>
+
+                <div id="loadingState" class="loading">
+                    <div class="spinner"></div>
+                    <p>Consultando CNPJs na API...</p>
+                    <p id="loadingProgress" style="font-size: 0.9em; color: #999; margin-top: 10px;"></p>
+                </div>
+
+                <div id="resultContainer" style="display: none;">
+                    <div class="stats" id="stats"></div>
+                    <div class="table-container">
+                        <table id="resultTable">
+                            <thead>
+                                <tr>
+                                    <th>CNPJ</th>
+                                    <th>Razão Social</th>
+                                    <th>Simples Nacional</th>
+                                    <th>Situação</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>🏢 Consultor Simples Nacional © 2024 | Desenvolvido com ❤️</p>
+            <p style="font-size: 0.9em; margin-top: 10px;">
+                Usando API OpenCNPJ (dados públicos da Receita Federal)
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://api-publica.opencnpj.org/v1/empresa/';
+
+        function preencherExemplo() {
+            const exemplos = `11.222.333/0001-81
+34.028.316/0001-86
+11222333000181`;
+            document.getElementById('cnpjInput').value = exemplos;
+            showAlert('✅ Exemplos carregados!', 'info');
+        }
+
+        function limpar() {
+            document.getElementById('cnpjInput').value = '';
+            limparResultados();
+            showAlert('🗑️ Texto limpo!', 'info');
+        }
+
+        function limparResultados() {
+            document.getElementById('emptyState').style.display = 'block';
+            document.getElementById('resultContainer').style.display = 'none';
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('alert').className = 'alert';
+        }
+
+        function showAlert(message, type) {
+            const alert = document.getElementById('alert');
+            alert.textContent = message;
+            alert.className = 'alert ' + type;
+            if (type === 'info') {
+                setTimeout(() => {
+                    alert.className = 'alert';
+                }, 3000);
+            }
+        }
+
+        function formatarCNPJ(cnpj) {
+            const limpo = cnpj.replace(/\D/g, '');
+            if (limpo.length !== 14) return null;
+            return `${limpo.slice(0,2)}.${limpo.slice(2,5)}.${limpo.slice(5,8)}/${limpo.slice(8,12)}-${limpo.slice(12,14)}`;
+        }
+
+        function limparCNPJ(cnpj) {
+            return cnpj.replace(/\D/g, '');
+        }
+
+        async function consultarCNPJ(cnpj) {
+            const cnpjLimpo = limparCNPJ(cnpj);
+            
+            if (cnpjLimpo.length !== 14) {
+                return {
+                    cnpj: cnpj,
+                    cnpjFormatado: cnpj,
+                    simples_nacional: 'ERRO',
+                    razao_social: 'CNPJ Inválido',
+                    situacao: 'Formato inválido',
+                    status: 'ERRO'
+                };
+            }
+
+            try {
+                const response = await fetch(API_BASE + cnpjLimpo, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    return {
+                        cnpj: cnpj,
+                        cnpjFormatado: formatarCNPJ(cnpjLimpo),
+                        razao_social: data.nome || 'N/A',
+                        nome_fantasia: data.fantasia || '',
+                        simples_nacional: data.simples ? 'SIM' : 'NÃO',
+                        situacao: data.situacao || 'N/A',
+                        data_opcao: data.data_opcao_simples || 'N/A',
+                        status: 'OK'
+                    };
+                } else if (response.status === 404) {
+                    return {
+                        cnpj: cnpj,
+                        cnpjFormatado: formatarCNPJ(cnpjLimpo),
+                        razao_social: 'Não encontrado',
+                        simples_nacional: 'ERRO',
+                        situacao: 'CNPJ não encontrado na base de dados',
+                        status: 'NAO_ENCONTRADO'
+                    };
+                } else {
+                    return {
+                        cnpj: cnpj,
+                        cnpjFormatado: formatarCNPJ(cnpjLimpo),
+                        simples_nacional: 'ERRO',
+                        razao_social: `Erro HTTP ${response.status}`,
+                        situacao: 'Erro ao consultar',
+                        status: 'ERRO'
+                    };
+                }
+            } catch (error) {
+                return {
+                    cnpj: cnpj,
+                    cnpjFormatado: cnpj,
+                    simples_nacional: 'ERRO',
+                    razao_social: 'Erro de conexão',
+                    situacao: error.message,
+                    status: 'ERRO'
+                };
+            }
+        }
+
+        async function consultarCNPJs() {
+            const cnpjText = document.getElementById('cnpjInput').value.trim();
+            
+            if (!cnpjText) {
+                showAlert('❌ Por favor, coloque alguns CNPJs!', 'error');
+                return;
+            }
+
+            const cnpjs = cnpjText.split('\n')
+                .map(c => c.trim())
+                .filter(c => c.length > 0);
+
+            if (cnpjs.length === 0) {
+                showAlert('❌ Nenhum CNPJ válido encontrado!', 'error');
+                return;
+            }
+
+            // Mostrar loading
+            document.getElementById('emptyState').style.display = 'none';
+            document.getElementById('resultContainer').style.display = 'none';
+            document.getElementById('loadingState').style.display = 'block';
+            document.getElementById('consultarBtn').disabled = true;
+            document.getElementById('progressBar').style.display = 'block';
+
+            const resultados = [];
+            
+            for (let i = 0; i < cnpjs.length; i++) {
+                const resultado = await consultarCNPJ(cnpjs[i]);
+                resultados.push(resultado);
+                
+                // Atualizar progresso
+                const percentual = Math.round((i + 1) / cnpjs.length * 100);
+                document.getElementById('progressFill').style.width = percentual + '%';
+                document.getElementById('loadingProgress').textContent = `${i + 1} de ${cnpjs.length}`;
+                
+                // Delay para não sobrecarregar a API
+                await new Promise(resolve => setTimeout(resolve, 300));
+            }
+
+            // Esconder loading e mostrar resultados
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('consultarBtn').disabled = false;
+            document.getElementById('progressBar').style.display = 'none';
+            document.getElementById('progressFill').style.width = '0%';
+            
+            mostrarResultados(resultados);
+        }
+
+        function mostrarResultados(resultados) {
+            const tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = '';
+
+            let simYes = 0, simNo = 0, erros = 0;
+
+            resultados.forEach(resultado => {
+                const row = tableBody.insertRow();
+                
+                // CNPJ
+                const cellCNPJ = row.insertCell(0);
+                cellCNPJ.textContent = resultado.cnpjFormatado || resultado.cnpj;
+                cellCNPJ.style.fontWeight = 'bold';
+                cellCNPJ.style.fontFamily = 'Courier New';
+
+                // Razão Social
+                const cellRazao = row.insertCell(1);
+                cellRazao.textContent = resultado.razao_social || 'N/A';
+
+                // Simples Nacional
+                const cellSimples = row.insertCell(2);
+                
+                if (resultado.simples_nacional === 'SIM') {
+                    cellSimples.innerHTML = '<div class="status-sim">✅ SIM</div>';
+                    simYes++;
+                } else if (resultado.simples_nacional === 'NÃO') {
+                    cellSimples.innerHTML = '<div class="status-nao">❌ NÃO</div>';
+                    simNo++;
+                } else {
+                    cellSimples.innerHTML = '<div class="status-erro">⚠️ ERRO</div>';
+                    erros++;
+                }
+
+                // Situação
+                const cellSit = row.insertCell(3);
+                cellSit.textContent = resultado.situacao || 'N/A';
+                cellSit.style.fontSize = '0.9em';
+                cellSit.style.color = '#666';
+            });
+
+            // Mostrar estatísticas
+            const statsDiv = document.getElementById('stats');
+            statsDiv.innerHTML = `
+                <div class="stat-box">
+                    <div class="number">${simYes}</div>
+                    <div class="label">Optantes Simples</div>
+                </div>
+                <div class="stat-box">
+                    <div class="number">${simNo}</div>
+                    <div class="label">Não Optantes</div>
+                </div>
+                <div class="stat-box">
+                    <div class="number">${erros}</div>
+                    <div class="label">Erros</div>
+                </div>
+            `;
+
+            document.getElementById('resultContainer').style.display = 'block';
+            showAlert(`✅ Consultadas ${resultados.length} empresas!`, 'success');
+        }
+
+        // Ao carregar a página
+        window.addEventListener('load', function() {
+            showAlert('👋 Cole seus CNPJs e clique em "Consultar Agora"', 'info');
+        });
+    </script>
+</body>
+</html>
