@@ -568,32 +568,46 @@
         }
 
         function parseReceitaWS(data) {
-            // ReceitaWS retorna em maiúsculas
-            if (data.status === 'ERROR') {
+            console.log('ReceitaWS dados completos:', JSON.stringify(data, null, 2));
+            
+            // ReceitaWS tem estrutura diferente
+            if (data.status === 'ERROR' || data.status === 'error') {
                 return null;
             }
+            
+            // ReceitaWS retorna em maiúsculas
+            const ehSimples = data.simples === true || data.simples === 'true' || data.simples === 'S';
+            
             return {
-                razao_social: data.nome ? data.nome.trim() : 'N/A',
-                simples_nacional: data.simples ? 'SIM' : 'NÃO',
-                situacao: data.status ? data.status.trim() : 'N/A'
+                razao_social: data.nome ? String(data.nome).trim() : 'N/A',
+                simples_nacional: ehSimples ? 'SIM' : 'NÃO',
+                situacao: data.status ? String(data.status).trim() : 'ATIVO'
             };
         }
 
         function parseBrasilAPI(data) {
+            console.log('BrasilAPI dados completos:', JSON.stringify(data, null, 2));
+            
             // BrasilAPI retorna estrutura diferente
+            const ehSimples = data.simples_nacional === true || data.simples_nacional === 'true' || data.simples_nacional === 'S';
+            
             return {
-                razao_social: data.nome ? data.nome.trim() : 'N/A',
-                simples_nacional: data.simples_nacional ? 'SIM' : 'NÃO',
-                situacao: data.situacao ? data.situacao.trim() : 'ATIVO'
+                razao_social: data.nome ? String(data.nome).trim() : 'N/A',
+                simples_nacional: ehSimples ? 'SIM' : 'NÃO',
+                situacao: data.situacao ? String(data.situacao).trim() : 'ATIVO'
             };
         }
 
         function parseOpenCNPJ(data) {
+            console.log('OpenCNPJ dados completos:', JSON.stringify(data, null, 2));
+            
             // OpenCNPJ retorna dados da Receita Federal
+            const ehSimples = data.simples === true || data.simples === 'true' || data.simples === 'S';
+            
             return {
-                razao_social: data.nome ? data.nome.trim() : 'N/A',
-                simples_nacional: data.simples ? 'SIM' : 'NÃO',
-                situacao: data.situacao ? data.situacao.trim() : 'N/A'
+                razao_social: data.nome ? String(data.nome).trim() : 'N/A',
+                simples_nacional: ehSimples ? 'SIM' : 'NÃO',
+                situacao: data.situacao ? String(data.situacao).trim() : 'ATIVO'
             };
         }
 
@@ -607,7 +621,7 @@
 
             try {
                 const url = api.url + cnpjLimpo;
-                console.log(`Tentando ${api.name}: ${url}`);
+                console.log(`🔍 Tentando ${api.name}: ${url}`);
                 
                 const response = await fetch(url, {
                     method: 'GET',
@@ -618,18 +632,20 @@
 
                 if (response.ok) {
                     const data = await response.json();
-                    console.log(`${api.name} resposta:`, data);
+                    console.log(`✅ ${api.name} sucesso:`, data);
                     
                     const parsed = api.parser(data);
-                    if (parsed && parsed.razao_social && parsed.razao_social !== 'N/A') {
+                    if (parsed) {
                         return {
                             ...parsed,
                             api: api.name
                         };
                     }
+                } else {
+                    console.log(`❌ ${api.name} HTTP ${response.status}`);
                 }
             } catch (error) {
-                console.log(`Erro em ${api.name}:`, error.message);
+                console.log(`❌ Erro em ${api.name}:`, error.message);
             }
 
             return null;
@@ -638,6 +654,8 @@
         async function consultarCNPJ(cnpj) {
             const cnpjLimpo = limparCNPJ(cnpj);
             const cnpjFormatado = formatarCNPJ(cnpjLimpo);
+            
+            console.log(`\n\n=== CONSULTANDO CNPJ: ${cnpjFormatado} ===`);
             
             if (cnpjLimpo.length !== 14) {
                 return {
@@ -664,6 +682,7 @@
             for (const apiKey of apisParaTentar) {
                 const resultado = await consultarComAPI(cnpj, apiKey);
                 if (resultado) {
+                    console.log(`\n✅ SUCESSO com ${resultado.api}:`, resultado);
                     return {
                         cnpj: cnpj,
                         cnpjFormatado: cnpjFormatado,
@@ -674,6 +693,7 @@
             }
 
             // Se nenhuma API funcionou
+            console.log(`\n❌ Nenhuma API conseguiu retornar dados`);
             return {
                 cnpj: cnpj,
                 cnpjFormatado: cnpjFormatado,
@@ -709,6 +729,7 @@
             document.getElementById('consultarBtn').disabled = true;
             document.getElementById('progressBar').style.display = 'block';
 
+            console.log('🚀 INICIANDO CONSULTAS');
             const resultados = [];
             
             for (let i = 0; i < cnpjs.length; i++) {
@@ -730,6 +751,7 @@
             document.getElementById('progressBar').style.display = 'none';
             document.getElementById('progressFill').style.width = '0%';
             
+            console.log('📊 RESULTADOS FINAIS:', resultados);
             mostrarResultados(resultados);
         }
 
@@ -788,13 +810,13 @@
             `;
 
             document.getElementById('resultContainer').style.display = 'block';
-            showAlert(`✅ Consultadas ${resultados.length} empresas!`, 'success');
+            showAlert(`✅ Consultadas ${resultados.length} empresas! Abra o Console (F12) para ver detalhes`, 'success');
         }
 
         // Ao carregar a página
         window.addEventListener('load', function() {
             atualizarInfoAPI();
-            showAlert('👋 Cole seus CNPJs e clique em "Consultar Agora"', 'info');
+            showAlert('👋 Cole seus CNPJs e clique em "Consultar Agora" | Abra F12 para ver logs de debug', 'info');
         });
     </script>
 </body>
