@@ -405,13 +405,12 @@
                 <div class="api-selector">
                     <label for="apiSelect">🔌 Selecione a API:</label>
                     <select id="apiSelect">
-                        <option value="auto">🤖 Automático (tenta as 3)</option>
-                        <option value="receitaws">ReceitaWS (Recomendado)</option>
-                        <option value="brasilapi">BrasilAPI</option>
+                        <option value="auto">🤖 Automático (BrasilAPI → OpenCNPJ)</option>
+                        <option value="brasilapi">BrasilAPI (Recomendado)</option>
                         <option value="opencnpj">OpenCNPJ</option>
                     </select>
                     <div class="api-info" id="apiInfo">
-                        ℹ️ Modo automático tentará ReceitaWS, depois BrasilAPI e OpenCNPJ
+                        ℹ️ Modo automático tentará BrasilAPI primeiro, depois OpenCNPJ
                     </div>
                 </div>
                 
@@ -485,21 +484,52 @@
         <div class="footer">
             <p>🏢 Consultor Simples Nacional © 2024 | Desenvolvido com ❤️</p>
             <p style="font-size: 0.9em; margin-top: 10px;">
-                Usando APIs: ReceitaWS • BrasilAPI • OpenCNPJ (dados públicos da Receita Federal)
+                Usando APIs: BrasilAPI • OpenCNPJ (dados públicos da Receita Federal)
             </p>
         </div>
     </div>
 
     <script>
+        function parseBrasilAPI(data, cnpjOriginal) {
+            console.log('📊 Parseando BrasilAPI:', {
+                opcao_pelo_simples: data.opcao_pelo_simples,
+                descricao_situacao_cadastral: data.descricao_situacao_cadastral,
+                razao_social: data.razao_social
+            });
+
+            return {
+                cnpj: cnpjOriginal,
+                cnpjFormatado: formatarCNPJ(cnpjOriginal),
+                razao_social: data.razao_social || 'N/A',
+                simples_nacional: data.opcao_pelo_simples === true ? 'SIM' : 'NÃO',
+                situacao: data.descricao_situacao_cadastral || 'N/A',
+                status: 'OK',
+                api: 'BrasilAPI'
+            };
+        }
+
+        function parseOpenCNPJ(data, cnpjOriginal) {
+            console.log('📊 Parseando OpenCNPJ:', {
+                simples: data.simples,
+                situacao: data.situacao,
+                nome: data.nome
+            });
+
+            return {
+                cnpj: cnpjOriginal,
+                cnpjFormatado: formatarCNPJ(cnpjOriginal),
+                razao_social: data.nome || 'N/A',
+                simples_nacional: data.simples === true ? 'SIM' : 'NÃO',
+                situacao: data.situacao || 'N/A',
+                status: 'OK',
+                api: 'OpenCNPJ'
+            };
+        }
+
         const APIs = {
-            receitaws: {
-                name: 'ReceitaWS',
-                url: 'https://www.receitaws.com.br/v1/cnpj/',
-                parser: parseReceitaWS
-            },
             brasilapi: {
                 name: 'BrasilAPI',
-                url: 'https://brasilapi.com.br/api/cnpj/v1/',
+                url: 'https://api.brasil.io/api/v1/cnpj/',
                 parser: parseBrasilAPI
             },
             opencnpj: {
@@ -508,22 +538,6 @@
                 parser: parseOpenCNPJ
             }
         };
-
-        function atualizarInfoAPI() {
-            const api = document.getElementById('apiSelect').value;
-            const infoDiv = document.getElementById('apiInfo');
-            
-            const infos = {
-                auto: 'ℹ️ Modo automático tenta ReceitaWS → BrasilAPI → OpenCNPJ',
-                receitaws: '✅ Usando ReceitaWS - Muito rápido e confiável',
-                brasilapi: '✅ Usando BrasilAPI - Confiável e rápido',
-                opencnpj: '✅ Usando OpenCNPJ - Dados públicos da Receita Federal'
-            };
-            
-            infoDiv.textContent = infos[api] || infos.auto;
-        }
-
-        document.getElementById('apiSelect').addEventListener('change', atualizarInfoAPI);
 
         function preencherExemplo() {
             const exemplos = `11.222.333/0001-81
@@ -567,63 +581,30 @@
             return cnpj.replace(/\D/g, '');
         }
 
-        function parseReceitaWS(data) {
-            console.log('ReceitaWS dados completos:', JSON.stringify(data, null, 2));
-            
-            // ReceitaWS tem estrutura diferente
-            if (data.status === 'ERROR' || data.status === 'error') {
-                return null;
-            }
-            
-            // ReceitaWS retorna em maiúsculas
-            const ehSimples = data.simples === true || data.simples === 'true' || data.simples === 'S';
-            
-            return {
-                razao_social: data.nome ? String(data.nome).trim() : 'N/A',
-                simples_nacional: ehSimples ? 'SIM' : 'NÃO',
-                situacao: data.status ? String(data.status).trim() : 'ATIVO'
-            };
-        }
-
-        function parseBrasilAPI(data) {
-            console.log('BrasilAPI dados completos:', JSON.stringify(data, null, 2));
-            
-            // BrasilAPI retorna estrutura diferente
-            const ehSimples = data.simples_nacional === true || data.simples_nacional === 'true' || data.simples_nacional === 'S';
-            
-            return {
-                razao_social: data.nome ? String(data.nome).trim() : 'N/A',
-                simples_nacional: ehSimples ? 'SIM' : 'NÃO',
-                situacao: data.situacao ? String(data.situacao).trim() : 'ATIVO'
-            };
-        }
-
-        function parseOpenCNPJ(data) {
-            console.log('OpenCNPJ dados completos:', JSON.stringify(data, null, 2));
-            
-            // OpenCNPJ retorna dados da Receita Federal
-            const ehSimples = data.simples === true || data.simples === 'true' || data.simples === 'S';
-            
-            return {
-                razao_social: data.nome ? String(data.nome).trim() : 'N/A',
-                simples_nacional: ehSimples ? 'SIM' : 'NÃO',
-                situacao: data.situacao ? String(data.situacao).trim() : 'ATIVO'
-            };
-        }
-
         async function consultarComAPI(cnpj, apiKey) {
-            const api = APIs[apiKey];
             const cnpjLimpo = limparCNPJ(cnpj);
             
             if (cnpjLimpo.length !== 14) {
+                return {
+                    cnpj: cnpj,
+                    cnpjFormatado: cnpj,
+                    simples_nacional: 'ERRO',
+                    razao_social: 'CNPJ Inválido',
+                    situacao: 'Formato inválido',
+                    status: 'ERRO'
+                };
+            }
+
+            const api = APIs[apiKey];
+            if (!api) {
+                console.error('❌ API desconhecida:', apiKey);
                 return null;
             }
 
             try {
-                const url = api.url + cnpjLimpo;
-                console.log(`🔍 Tentando ${api.name}: ${url}`);
+                console.log(`🔍 Tentando ${api.name}: ${api.url}${cnpjLimpo}`);
                 
-                const response = await fetch(url, {
+                const response = await fetch(api.url + cnpjLimpo, {
                     method: 'GET',
                     headers: {
                         'Accept': 'application/json'
@@ -633,80 +614,56 @@
                 if (response.ok) {
                     const data = await response.json();
                     console.log(`✅ ${api.name} sucesso:`, data);
-                    
-                    const parsed = api.parser(data);
-                    if (parsed) {
-                        return {
-                            ...parsed,
-                            api: api.name
-                        };
-                    }
+                    const resultado = api.parser(data, cnpj);
+                    console.log(`✅ ${api.name} parseado:`, resultado);
+                    return resultado;
+                } else if (response.status === 404) {
+                    console.log(`⚠️ ${api.name}: CNPJ não encontrado`);
+                    return {
+                        cnpj: cnpj,
+                        cnpjFormatado: formatarCNPJ(cnpjLimpo),
+                        razao_social: 'Não encontrado',
+                        simples_nacional: 'ERRO',
+                        situacao: 'CNPJ não encontrado na base de dados',
+                        status: 'NAO_ENCONTRADO'
+                    };
                 } else {
-                    console.log(`❌ ${api.name} HTTP ${response.status}`);
+                    console.log(`⚠️ ${api.name}: HTTP ${response.status}`);
+                    return null;
                 }
             } catch (error) {
                 console.log(`❌ Erro em ${api.name}:`, error.message);
+                return null;
             }
-
-            return null;
         }
 
-        async function consultarCNPJ(cnpj) {
-            const cnpjLimpo = limparCNPJ(cnpj);
-            const cnpjFormatado = formatarCNPJ(cnpjLimpo);
-            
-            console.log(`\n\n=== CONSULTANDO CNPJ: ${cnpjFormatado} ===`);
-            
-            if (cnpjLimpo.length !== 14) {
+        async function consultarCNPJ(cnpj, apiMode) {
+            if (apiMode === 'auto') {
+                // Tentar BrasilAPI primeiro, depois OpenCNPJ
+                let resultado = await consultarComAPI(cnpj, 'brasilapi');
+                if (resultado) return resultado;
+
+                resultado = await consultarComAPI(cnpj, 'opencnpj');
+                if (resultado) return resultado;
+
+                // Se nenhuma funcionou
                 return {
                     cnpj: cnpj,
-                    cnpjFormatado: cnpj,
+                    cnpjFormatado: formatarCNPJ(cnpj),
                     simples_nacional: 'ERRO',
-                    razao_social: 'CNPJ Inválido',
-                    situacao: 'Formato inválido',
-                    status: 'ERRO',
-                    api: 'N/A'
+                    razao_social: 'Nenhuma API funcionou',
+                    situacao: 'Verifique sua conexão e tente novamente',
+                    status: 'ERRO'
                 };
-            }
-
-            const apiSelect = document.getElementById('apiSelect').value;
-            let apisParaTentar = [];
-
-            if (apiSelect === 'auto') {
-                apisParaTentar = ['receitaws', 'brasilapi', 'opencnpj'];
             } else {
-                apisParaTentar = [apiSelect];
+                // Tentar apenas a API selecionada
+                return await consultarComAPI(cnpj, apiMode);
             }
-
-            // Tentar cada API em sequência
-            for (const apiKey of apisParaTentar) {
-                const resultado = await consultarComAPI(cnpj, apiKey);
-                if (resultado) {
-                    console.log(`\n✅ SUCESSO com ${resultado.api}:`, resultado);
-                    return {
-                        cnpj: cnpj,
-                        cnpjFormatado: cnpjFormatado,
-                        ...resultado,
-                        status: 'OK'
-                    };
-                }
-            }
-
-            // Se nenhuma API funcionou
-            console.log(`\n❌ Nenhuma API conseguiu retornar dados`);
-            return {
-                cnpj: cnpj,
-                cnpjFormatado: cnpjFormatado,
-                simples_nacional: 'ERRO',
-                razao_social: 'Não encontrado',
-                situacao: 'CNPJ não localizado',
-                status: 'NAO_ENCONTRADO',
-                api: 'Nenhuma'
-            };
         }
 
         async function consultarCNPJs() {
             const cnpjText = document.getElementById('cnpjInput').value.trim();
+            const apiMode = document.getElementById('apiSelect').value;
             
             if (!cnpjText) {
                 showAlert('❌ Por favor, coloque alguns CNPJs!', 'error');
@@ -729,11 +686,11 @@
             document.getElementById('consultarBtn').disabled = true;
             document.getElementById('progressBar').style.display = 'block';
 
-            console.log('🚀 INICIANDO CONSULTAS');
+            console.log(`=== CONSULTANDO ${cnpjs.length} CNPJ(s) COM ${apiMode.toUpperCase()} ===`);
             const resultados = [];
             
             for (let i = 0; i < cnpjs.length; i++) {
-                const resultado = await consultarCNPJ(cnpjs[i]);
+                const resultado = await consultarCNPJ(cnpjs[i], apiMode);
                 resultados.push(resultado);
                 
                 // Atualizar progresso
@@ -741,8 +698,10 @@
                 document.getElementById('progressFill').style.width = percentual + '%';
                 document.getElementById('loadingProgress').textContent = `${i + 1} de ${cnpjs.length}`;
                 
-                // Delay para não sobrecarregar
-                await new Promise(resolve => setTimeout(resolve, 500));
+                // Delay para não sobrecarregar a API
+                if (i < cnpjs.length - 1) {
+                    await new Promise(resolve => setTimeout(resolve, 300));
+                }
             }
 
             // Esconder loading e mostrar resultados
@@ -751,7 +710,6 @@
             document.getElementById('progressBar').style.display = 'none';
             document.getElementById('progressFill').style.width = '0%';
             
-            console.log('📊 RESULTADOS FINAIS:', resultados);
             mostrarResultados(resultados);
         }
 
@@ -766,12 +724,12 @@
                 
                 // CNPJ
                 const cellCNPJ = row.insertCell(0);
-                cellCNPJ.innerHTML = `<span class="cnpj-cell">${resultado.cnpjFormatado}</span>`;
+                cellCNPJ.textContent = resultado.cnpjFormatado || resultado.cnpj;
+                cellCNPJ.className = 'cnpj-cell';
 
                 // Razão Social
                 const cellRazao = row.insertCell(1);
                 cellRazao.textContent = resultado.razao_social || 'N/A';
-                cellRazao.title = resultado.razao_social || 'Não disponível';
 
                 // Simples Nacional
                 const cellSimples = row.insertCell(2);
@@ -790,6 +748,8 @@
                 // Situação
                 const cellSit = row.insertCell(3);
                 cellSit.textContent = resultado.situacao || 'N/A';
+                cellSit.style.fontSize = '0.9em';
+                cellSit.style.color = '#666';
             });
 
             // Mostrar estatísticas
@@ -810,13 +770,12 @@
             `;
 
             document.getElementById('resultContainer').style.display = 'block';
-            showAlert(`✅ Consultadas ${resultados.length} empresas! Abra o Console (F12) para ver detalhes`, 'success');
+            showAlert(`✅ Consultadas ${resultados.length} empresas!`, 'success');
         }
 
         // Ao carregar a página
         window.addEventListener('load', function() {
-            atualizarInfoAPI();
-            showAlert('👋 Cole seus CNPJs e clique em "Consultar Agora" | Abra F12 para ver logs de debug', 'info');
+            showAlert('👋 Cole seus CNPJs e clique em "Consultar Agora"', 'info');
         });
     </script>
 </body>
